@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SoundWave Store - Wireless Headphones</title>
+<style>
+    :root {
+        --bg: #f5f7fb;
+        --surface: #ffffff;
+        --border: #e3e8f0;
+        --text: #152035;
+        --muted: #5b6b85;
+        --accent: #2563eb;
+        --accent-soft: #eef4ff;
+        --good: #16a34a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+    }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+        background: var(--text);
+        color: #fff;
+        text-align: center;
+        font-size: 12px;
+        padding: 6px 12px;
+        letter-spacing: 0.05em;
+    }
+
+    nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        padding: 14px 32px;
+    }
+
+    nav .logo {
+        font-weight: 800;
+        font-size: 18px;
+        letter-spacing: -0.02em;
+    }
+
+    nav .logo span { color: var(--accent); }
+
+    nav .links { display: flex; gap: 22px; font-size: 14px; color: var(--muted); }
+    nav .cart-chip {
+        background: var(--accent-soft);
+        color: var(--accent);
+        border: 1px solid #c9dafc;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    main {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 28px 20px 48px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 26px;
+    }
+
+    /* ---------- Product card ---------- */
+    .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 1px 2px rgba(21, 32, 53, 0.05);
+    }
+
+    .product-image {
+        height: 220px;
+        border-radius: 12px;
+        background:
+            radial-gradient(circle at 30% 30%, #dbeafe, transparent 60%),
+            linear-gradient(135deg, #1e3a8a, #3b82f6);
+        display: grid;
+        place-items: center;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 56px;
+        margin-bottom: 18px;
+    }
+
+    .category {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent);
+    }
+
+    h1 { font-size: 26px; margin-top: 4px; letter-spacing: -0.02em; }
+
+    .price { margin: 12px 0 6px; font-size: 22px; font-weight: 800; }
+    .price .cur { color: var(--muted); font-weight: 600; font-size: 15px; }
+    .rating { font-size: 13px; color: var(--muted); }
+    .rating b { color: #b45309; }
+
+    .desc { margin-top: 14px; font-size: 14px; color: var(--muted); }
+
+    .actions { display: flex; gap: 10px; margin-top: 20px; }
+
+    .actions button {
+        font: inherit;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 12px 18px;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        transition: transform 0.06s ease, box-shadow 0.12s ease;
+    }
+
+    .actions button:hover { box-shadow: 0 3px 10px rgba(21, 32, 53, 0.12); }
+    .actions button:active { transform: translateY(1px); }
+
+    #cartButton {
+        flex: 1;
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+    }
+
+    #cartButton:hover { background: #1d4fd7; }
+
+    #message {
+        margin-top: 14px;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--good);
+        min-height: 20px;
+    }
+
+    /* ---------- Customer info ---------- */
+    .customer-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px dashed var(--border);
+        font-size: 14px;
+    }
+
+    .customer-row:last-of-type { border-bottom: none; }
+
+    .customer-row .k { color: var(--muted); }
+    .customer-row .v { font-weight: 600; }
+
+    .hint {
+        margin-top: 14px;
+        font-size: 12px;
+        color: var(--muted);
+        background: var(--accent-soft);
+        border: 1px solid #dbe7fd;
+        border-radius: 10px;
+        padding: 10px 12px;
+    }
+
+    .hint .tag { color: var(--accent); font-weight: 700; font-family: ui-monospace, Consolas, monospace; }
+
+    /* ---------- Reviews / related ---------- */
+    .side { display: flex; flex-direction: column; gap: 26px; }
+
+    .review {
+        font-size: 14px;
+        border-bottom: 1px solid var(--border);
+        padding: 12px 0;
+    }
+
+    .review:last-child { border-bottom: none; }
+    .review .stars { color: #b45309; }
+    .review .who { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+    .related { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .related .item {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        background: var(--surface);
+        font-size: 13px;
+    }
+    .related .item .p { font-weight: 600; margin-top: 4px; }
+
+    footer {
+        text-align: center;
+        padding-bottom: 28px;
+        font-size: 12px;
+        color: var(--muted);
+    }
+</style>
+</head>
+<body>
+
+    <div class="topbar">Free shipping over &#8377;499 &#183; COD available &#183; 30-day returns</div>
+
+    <nav>
+        <div class="logo">Sound<span>Wave</span></div>
+        <div class="links">
+            <span>Home</span>
+            <span>Products</span>
+            <span>Offers</span>
+            <span>Support</span>
+        </div>
+        <div class="cart-chip">Cart (0)</div>
+    </nav>
+
+    <main>
+
+        <!-- ================= PRODUCT ================= -->
+        <section class="card" aria-label="Product">
+            <div class="product-image">&#127911;</div>
+
+            <div class="category">Audio</div>
+            <h1>Wireless Headphones</h1>
+
+            <div class="price"><span class="cur">&#8377;</span>2,999</div>
+            <div class="rating"><b>&#9733;&#9733;&#9733;&#9733;&#9734;</b> &nbsp;4.4 &#183; 1,286 reviews</div>
+
+            <p class="desc">
+                Over-ear wireless headphones with active noise cancellation,
+                a 40-hour battery life and deep, balanced sound for music and calls.
+            </p>
+
+            <div class="actions">
+                <button id="cartButton" type="button" aria-label="Add to Cart">
+                    Add to Cart
+                </button>
+                <button id="wishlistButton" type="button" aria-label="Add to Wishlist">
+                    Add to Wishlist
+                </button>
+            </div>
+
+            <p id="message" role="status"></p>
+
+            <div class="hint">
+                <strong>Demo account on this device:</strong> this page contains personal
+                information that the <span class="tag">Privacy Browser Agent</span> should
+                detect and redact locally before any cloud AI receives the page context.
+            </div>
+        </section>
+
+        <!-- ================= CUSTOMER INFO ================= -->
+        <aside class="card" aria-label="Customer information">
+            <h2 style="font-size: 16px; margin-bottom: 4px;">Customer Information</h2>
+            <p style="font-size: 13px; color: var(--muted); margin-bottom: 8px;">
+                Shipping &amp; contact details (demo data)
+            </p>
+
+            <div class="customer-row">
+                <span class="k">Name</span>
+                <span class="v">Adhithya Venkatesh</span>
+            </div>
+
+            <div class="customer-row">
+                <span class="k">Email</span>
+                <span class="v"><a href="mailto:adhithya@example.com">adhithya@example.com</a></span>
+            </div>
+
+            <div class="customer-row">
+                <span class="k">Phone</span>
+                <span class="v">9876543210</span>
+            </div>
+
+            <div class="customer-row">
+                <span class="k">Address</span>
+                <span class="v">CIT Campus, Chennai</span>
+            </div>
+        </aside>
+
+        <!-- ================= REVIEWS + RELATED ================= -->
+        <section class="side">
+            <div class="card">
+                <h2 style="font-size: 16px; margin-bottom: 6px;">Customer Reviews</h2>
+
+                <div class="review">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p>Excellent sound and the noise cancellation is great in crowded trains.</p>
+                    <div class="who">Verified buyer &#183; 2 days ago</div>
+                </div>
+
+                <div class="review">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9734;</div>
+                    <p>Good battery life. The ear cushions are very comfortable.</p>
+                    <div class="who">Rahul &#183; 1 week ago</div>
+                </div>
+
+                <div class="review">
+                    <div class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    <p>Fast delivery and nicely packaged. Worth the price.</p>
+                    <div class="who">Verified buyer &#183; 3 weeks ago</div>
+                </div>
+            </div>
+
+            <div>
+                <h2 style="font-size: 16px; margin-bottom: 10px;">You may also like</h2>
+                <div class="related">
+                    <div class="item">&#127911; Wireless Earbuds<div class="p">&#8377;1,499</div></div>
+                    <div class="item">&#128297; Speaker Stands<div class="p">&#8377;999</div></div>
+                    <div class="item">&#129514; Headphone Case<div class="p">&#8377;599</div></div>
+                    <div class="item">&#128225; USB-C Cable<div class="p">&#8377;299</div></div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        SoundWave Store &#183; Demo page for SIH 2026 &#8212; Privacy Browser Agent
+    </footer>
+
+    <script>
+        // ========================================
+        // CART / WISHLIST (keep IDs and behaviour)
+        // ========================================
+
+        document
+            .getElementById("cartButton")
+            .addEventListener("click", function () {
+
+                document.getElementById("message")
+                    .textContent = "Product added to cart!";
+
+                document.querySelector(".cart-chip")
+                    .textContent = "Cart (1)";
+
+                console.log("ADD TO CART CLICKED");
+            });
+
+        document
+            .getElementById("wishlistButton")
+            .addEventListener("click", function () {
+
+                document.getElementById("message")
+                    .textContent = "Product added to wishlist!";
+
+                console.log("WISHLIST CLICKED");
+            });
+    </script>
+</body>
+</html>
