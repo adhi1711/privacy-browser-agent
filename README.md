@@ -2,15 +2,19 @@
 
 
 
-> \*\*On-device Visual Perception for Lightweight Browser Agents\*\*
+\### On-device Visual Perception for Lightweight Browser Agents
 
 
 
-A privacy-preserving browser agent that performs sensitive-information detection locally before sending webpage context to cloud AI.
+Privacy Browser Agent is a Chrome extension prototype that adds a \*\*local privacy layer to AI-powered browser automation\*\*.
 
 
 
-The system follows a simple principle:
+Instead of sending an entire webpage directly to a cloud AI model, the extension first analyzes the webpage locally, detects sensitive information, and creates a sanitized version of the content.
+
+
+
+Only the sanitized context is sent to the cloud AI for reasoning. The browser then executes the returned action locally on the original webpage.
 
 
 
@@ -22,15 +26,15 @@ The system follows a simple principle:
 
 
 
-\## 📌 Overview
+\## Why We Built This
 
 
 
-Modern browser agents can use AI to understand webpages and perform actions such as clicking buttons, scrolling, and interacting with web content.
+AI browser agents need access to webpage information to understand what is on a page and decide what action to take.
 
 
 
-However, sending raw webpage content directly to a cloud AI model can expose sensitive information such as:
+The problem is that webpages can also contain private information such as:
 
 
 
@@ -44,19 +48,15 @@ However, sending raw webpage content directly to a cloud AI model can expose sen
 
 \* Organizations
 
-\* Other personally identifiable information (PII)
+\* Other personal information
 
 
 
-\*\*Privacy Browser Agent\*\* introduces a local privacy layer between the webpage and cloud AI.
+Sending all of this information to a cloud AI model creates an unnecessary privacy risk.
 
 
 
-Sensitive information is detected and sanitized \*\*on the user's device\*\* before any webpage context is sent to the cloud.
-
-
-
-The cloud AI receives only the sanitized representation and returns a structured browser action.
+Our approach is to put a \*\*privacy filter on the user's device before cloud processing\*\*.
 
 
 
@@ -64,135 +64,81 @@ The cloud AI receives only the sanitized representation and returns a structured
 
 
 
-\## 🎯 Problem Statement
+\## How It Works
 
 
 
-Browser agents increasingly rely on webpage and visual context to perform tasks.
-
-
-
-Traditional architectures may send webpage information directly to remote AI systems, creating privacy risks when pages contain personal or confidential information.
-
-
-
-The goal of this project is to build a lightweight browser agent that:
-
-
-
-1\. Processes webpage information locally.
-
-2\. Detects sensitive information using lightweight AI.
-
-3\. Prevents sensitive information from leaving the device.
-
-4\. Sends only sanitized context to cloud AI.
-
-5\. Uses cloud AI for higher-level reasoning.
-
-6\. Executes the returned action locally in the browser.
-
-
-
-\---
-
-
-
-\## 💡 Proposed Solution
-
-
-
-The extension separates \*\*privacy-sensitive perception\*\* from \*\*cloud-based reasoning\*\*.
-
-
-
-\### Workflow
+The basic workflow is:
 
 
 
 ```text
 
-&#x20;               WEBPAGE
+Webpage
 
-&#x20;                  │
+&#x20;  │
 
-&#x20;                  ▼
+&#x20;  ▼
 
-&#x20;         ┌─────────────────┐
+Local webpage extraction
 
-&#x20;         │ Local Extraction│
+&#x20;  │
 
-&#x20;         └────────┬────────┘
+&#x20;  ▼
 
-&#x20;                  │
+Local AI / NER
 
-&#x20;                  ▼
+&#x20;  │
 
-&#x20;         ┌─────────────────┐
+&#x20;  ▼
 
-&#x20;         │   Local AI/N​​ER  │
+Sensitive information detection
 
-&#x20;         │ PII Detection   │
+&#x20;  │
 
-&#x20;         └────────┬────────┘
+&#x20;  ▼
 
-&#x20;                  │
+Sanitization
 
-&#x20;                  ▼
+&#x20;  │
 
-&#x20;         ┌─────────────────┐
+&#x20;  ▼
 
-&#x20;         │ Privacy Filter  │
+Sanitized webpage context
 
-&#x20;         │ \& Sanitization  │
+&#x20;  │
 
-&#x20;         └────────┬────────┘
+&#x20;  ▼
 
-&#x20;                  │
+Cloud AI
 
-&#x20;            Sanitized Data
+&#x20;  │
 
-&#x20;                  │
+&#x20;  ▼
 
-&#x20;                  ▼
+Action returned
 
-&#x20;         ┌─────────────────┐
+&#x20;  │
 
-&#x20;         │    Cloud AI     │
+&#x20;  ▼
 
-&#x20;         │    Reasoning    │
+Original webpage
 
-&#x20;         └────────┬────────┘
+&#x20;  │
 
-&#x20;                  │
+&#x20;  ▼
 
-&#x20;            Action JSON
-
-&#x20;                  │
-
-&#x20;                  ▼
-
-&#x20;         ┌─────────────────┐
-
-&#x20;         │ Browser Action  │
-
-&#x20;         └────────┬────────┘
-
-&#x20;                  │
-
-&#x20;                  ▼
-
-&#x20;           Original DOM
+Browser action
 
 ```
 
 
 
-The important security boundary is:
+The important part is that the \*\*original sensitive values stay on the device\*\*.
 
 
 
-> \*\*Raw sensitive information is processed locally and is not included in the cloud request.\*\*
+The cloud AI receives a sanitized representation instead of the raw private information.
 
 
 
@@ -200,31 +146,15 @@ The important security boundary is:
 
 
 
-\## 🔐 Privacy Architecture
+\## Privacy Approach
 
 
 
-The system maintains two representations of the webpage:
+The extension keeps the original webpage DOM unchanged.
 
 
 
-\### Original DOM
-
-
-
-The original webpage remains unchanged and is used locally for browser interaction.
-
-
-
-\### Sanitized Context
-
-
-
-A separate representation is created for cloud reasoning.
-
-
-
-Sensitive information is replaced with privacy-safe placeholders before the context is sent to the cloud.
+It creates a separate sanitized representation for cloud reasoning.
 
 
 
@@ -236,15 +166,25 @@ For example:
 
 Original:
 
-Name: \[private name]
-
-Email: \[private email]
-
-Phone: \[private phone]
 
 
+Name: Adhithya Venkatesh
 
-Sanitized:
+Email: adhithya@example.com
+
+Phone: 9876543210
+
+Location: Chennai
+
+```
+
+
+
+The cloud receives something similar to:
+
+
+
+```text
 
 Name: \[PERSON]
 
@@ -252,11 +192,17 @@ Email: \[EMAIL]
 
 Phone: \[PHONE]
 
+Location: \[LOCATION]
+
 ```
 
 
 
-The cloud AI therefore reasons about the structure and available actions without receiving the original sensitive values.
+This allows the cloud AI to understand the structure of the webpage without needing the actual private values.
+
+
+
+The original DOM is then used locally when an action needs to be performed.
 
 
 
@@ -264,15 +210,15 @@ The cloud AI therefore reasons about the structure and available actions without
 
 
 
-\## 🤖 Local AI
+\## Local AI
 
 
 
-The project uses \*\*Hugging Face Transformers.js\*\* to run AI inference locally inside the browser environment.
+Sensitive information detection runs locally inside the browser using \*\*Hugging Face Transformers.js\*\*.
 
 
 
-\### Model
+The current prototype uses:
 
 
 
@@ -284,47 +230,11 @@ Xenova/bert-base-NER
 
 
 
-The model performs token classification / Named Entity Recognition (NER).
+The model performs Named Entity Recognition (NER) and identifies entities that can be used by the privacy layer.
 
 
 
-Detected entities are grouped and used by the local privacy layer to create sanitized webpage context.
-
-
-
-\### Why local AI?
-
-
-
-Running the privacy detection locally provides an important security boundary:
-
-
-
-```text
-
-Webpage
-
-&#x20;  ↓
-
-Local AI
-
-&#x20;  ↓
-
-Privacy filtering
-
-&#x20;  ↓
-
-Sanitized context
-
-&#x20;  ↓
-
-Cloud AI
-
-```
-
-
-
-The cloud model never needs access to the raw sensitive values.
+Running this step locally is important because the webpage is analyzed \*\*before\*\* its context is sent to the cloud.
 
 
 
@@ -332,31 +242,19 @@ The cloud model never needs access to the raw sensitive values.
 
 
 
-\## ☁️ Cloud AI
+\## Cloud Reasoning
 
 
 
-After sanitization, the cleaned webpage context is sent to the backend.
+Once the webpage has been sanitized, the cleaned context is sent to our backend.
 
 
 
-The backend uses:
+The backend uses \*\*Google Gemini\*\* to reason about the webpage and decide what action should be taken.
 
 
 
-```text
-
-Google Gemini
-
-```
-
-
-
-The cloud model analyzes the sanitized context and determines an appropriate browser action.
-
-
-
-Supported actions include:
+The current action types are:
 
 
 
@@ -374,7 +272,7 @@ TYPE
 
 
 
-Example response:
+For example, Gemini can return:
 
 
 
@@ -392,7 +290,7 @@ Example response:
 
 
 
-The browser extension receives this structured response and performs the action locally.
+The extension then finds `"Add to Cart"` in the \*\*original DOM\*\* and performs the click locally.
 
 
 
@@ -400,93 +298,25 @@ The browser extension receives this structured response and performs the action 
 
 
 
-\## 🌐 Browser Action Execution
+\## Experimental Vision Pipeline
 
 
 
-The action returned by the cloud model is matched against the \*\*original webpage DOM\*\*.
+The project also includes a local vision pipeline using:
 
 
 
-This is important because the live webpage is not modified by the privacy filter.
+\* YOLOS-Tiny
+
+\* Transformers.js
+
+\* ONNX Runtime
+
+\* WebAssembly
 
 
 
-For example:
-
-
-
-```text
-
-Cloud AI:
-
-{
-
-&#x20; "action": "CLICK",
-
-&#x20; "target": "Add to Cart"
-
-}
-
-
-
-&#x20;            ↓
-
-
-
-Original DOM
-
-&#x20;            ↓
-
-
-
-Find "Add to Cart"
-
-&#x20;            ↓
-
-
-
-Execute click locally
-
-```
-
-
-
-This allows the browser to interact with the original webpage while keeping sensitive information out of the cloud request.
-
-
-
-\---
-
-
-
-\## 👁️ Experimental Visual Perception
-
-
-
-The project also includes an experimental local vision pipeline using:
-
-
-
-```text
-
-YOLOS-Tiny
-
-ONNX Runtime
-
-WebAssembly
-
-Transformers.js
-
-```
-
-
-
-The pipeline can capture a webpage screenshot and run local object detection.
-
-
-
-Current architecture:
+The vision pipeline can capture a screenshot and run local object detection.
 
 
 
@@ -504,7 +334,7 @@ YOLOS-Tiny
 
 &#x20;   ↓
 
-Local object detection
+Local detection
 
 ```
 
@@ -514,15 +344,15 @@ Local object detection
 
 
 
-The visual perception component is \*\*experimental\*\*.
+The vision component is currently \*\*experimental\*\*.
 
 
 
-The main working prototype currently relies on DOM/text extraction and local NER for privacy protection and browser action decisions.
+The main working prototype uses DOM/text extraction and local NER for privacy protection and browser actions.
 
 
 
-The vision component is included as a foundation for future webpage visual understanding where important information may not be reliably represented in the DOM.
+The vision pipeline is included as a foundation for future work where visual information may not be available or reliable through the DOM alone.
 
 
 
@@ -530,11 +360,79 @@ The vision component is included as a foundation for future webpage visual under
 
 
 
-\## 🧩 Technology Stack
+\## System Architecture
 
 
 
-| Component           | Technology                   |
+\### Traditional approach
+
+
+
+```text
+
+Webpage
+
+&#x20;  ↓
+
+Cloud AI
+
+&#x20;  ↓
+
+Browser Action
+
+```
+
+
+
+The cloud receives the webpage context directly.
+
+
+
+\### Our approach
+
+
+
+```text
+
+Webpage
+
+&#x20;  ↓
+
+Local Privacy Layer
+
+&#x20;  ↓
+
+Sanitized Context
+
+&#x20;  ↓
+
+Cloud AI
+
+&#x20;  ↓
+
+Browser Action
+
+```
+
+
+
+The main idea is simple:
+
+
+
+> \*\*The cloud should only see the information it actually needs.\*\*
+
+
+
+\---
+
+
+
+\## Technology Stack
+
+
+
+| Area                | Technology                   |
 
 | ------------------- | ---------------------------- |
 
@@ -546,25 +444,23 @@ The vision component is included as a foundation for future webpage visual under
 
 | Local AI            | Hugging Face Transformers.js |
 
-| Local NER Model     | Xenova/BERT-base-NER         |
+| NER Model           | Xenova/BERT-base-NER         |
 
 | AI Runtime          | ONNX Runtime / WebAssembly   |
 
-| Vision Model        | YOLOS-Tiny                   |
+| Vision              | YOLOS-Tiny                   |
 
 | Backend             | Node.js                      |
 
-| API Framework       | Express.js                   |
+| API                 | Express.js                   |
 
 | Cloud AI            | Google Gemini                |
 
-| API SDK             | `@google/genai`              |
+| Gemini SDK          | `@google/genai`              |
 
 | Build Tool          | Vite                         |
 
 | Configuration       | dotenv                       |
-
-| Development         | VS Code / PowerShell         |
 
 
 
@@ -572,7 +468,7 @@ The vision component is included as a foundation for future webpage visual under
 
 
 
-\## 📁 Project Structure
+\## Project Structure
 
 
 
@@ -590,16 +486,6 @@ privacy-browser-agent/
 
 │
 
-├── dist/
-
-│   ├── ai.mjs
-
-│   ├── vision.mjs
-
-│   └── assets/
-
-│
-
 ├── public/
 
 │   └── onnxruntime/
@@ -609,6 +495,16 @@ privacy-browser-agent/
 ├── server/
 
 │   └── server.js
+
+│
+
+├── dist/
+
+│   ├── ai.mjs
+
+│   ├── vision.mjs
+
+│   └── assets/
 
 │
 
@@ -636,7 +532,7 @@ privacy-browser-agent/
 
 
 
-> `.env` contains the Gemini API key and should \*\*never be committed to GitHub\*\*.
+> `.env` is intentionally excluded from GitHub because it contains the Gemini API key.
 
 
 
@@ -644,7 +540,7 @@ privacy-browser-agent/
 
 
 
-\## 🚀 Installation
+\## Running the Project
 
 
 
@@ -674,7 +570,7 @@ npm install
 
 
 
-If PowerShell blocks the npm command on Windows, use:
+On Windows PowerShell, use this if necessary:
 
 
 
@@ -686,11 +582,11 @@ npm.cmd install
 
 
 
-\### 3. Configure the API key
+\### 3. Add your Gemini API key
 
 
 
-Create a `.env` file:
+Create a `.env` file in the project root:
 
 
 
@@ -706,15 +602,7 @@ Do not commit this file.
 
 
 
-\---
-
-
-
-\## 🔨 Build the Extension
-
-
-
-Run:
+\### 4. Build the extension
 
 
 
@@ -726,7 +614,7 @@ npm run build
 
 
 
-On Windows PowerShell, if necessary:
+If required on Windows:
 
 
 
@@ -738,61 +626,7 @@ npm.cmd run build
 
 
 
-The compiled files are generated in the `dist/` directory.
-
-
-
-\---
-
-
-
-\## 🌐 Load the Extension in Chrome
-
-
-
-1\. Open Chrome.
-
-2\. Go to:
-
-
-
-```text
-
-chrome://extensions/
-
-```
-
-
-
-3\. Enable \*\*Developer mode\*\*.
-
-4\. Select \*\*Load unpacked\*\*.
-
-5\. Choose the project folder:
-
-
-
-```text
-
-privacy-browser-agent
-
-```
-
-
-
-6\. The \*\*Privacy Browser Agent\*\* extension should appear.
-
-
-
-\---
-
-
-
-\## 🖥️ Start the Backend
-
-
-
-Open a terminal inside the project directory and run:
+\### 5. Start the backend
 
 
 
@@ -804,7 +638,7 @@ node server/server.js
 
 
 
-The backend runs at:
+The backend runs on:
 
 
 
@@ -816,15 +650,19 @@ http://localhost:3000
 
 
 
-You should see:
+\### 6. Load the extension in Chrome
 
 
 
-```text
+1\. Open Chrome.
 
-Server running on http://localhost:3000
+2\. Go to `chrome://extensions/`
 
-```
+3\. Enable \*\*Developer mode\*\*.
+
+4\. Click \*\*Load unpacked\*\*.
+
+5\. Select the `privacy-browser-agent` project folder.
 
 
 
@@ -832,11 +670,11 @@ Server running on http://localhost:3000
 
 
 
-\## 🧪 Demo
+\## Demo
 
 
 
-The repository contains a controlled demonstration webpage:
+The project includes a controlled demo webpage in:
 
 
 
@@ -866,53 +704,53 @@ The page contains synthetic information such as:
 
 
 
-\### Demo Flow
+\### Demo flow
 
 
 
 ```text
 
-1\. Open test.html
+Open test.html
 
-&#x20;       ↓
+&#x20;     ↓
 
-2\. Open Privacy Browser Agent
+Open the extension
 
-&#x20;       ↓
+&#x20;     ↓
 
-3\. Click ANALYZE PAGE
+Click "ANALYZE PAGE"
 
-&#x20;       ↓
+&#x20;     ↓
 
-4\. Extract webpage content locally
+Extract webpage content locally
 
-&#x20;       ↓
+&#x20;     ↓
 
-5\. Run local NER
+Run local NER
 
-&#x20;       ↓
+&#x20;     ↓
 
-6\. Detect sensitive information
+Detect sensitive information
 
-&#x20;       ↓
+&#x20;     ↓
 
-7\. Create sanitized context
+Create sanitized context
 
-&#x20;       ↓
+&#x20;     ↓
 
-8\. Send sanitized context to backend
+Send sanitized context to backend
 
-&#x20;       ↓
+&#x20;     ↓
 
-9\. Gemini analyzes the sanitized context
+Gemini reasons over the sanitized context
 
-&#x20;       ↓
+&#x20;     ↓
 
-10\. Receive structured action
+Receive an action
 
-&#x20;       ↓
+&#x20;     ↓
 
-11\. Execute action on original DOM
+Execute the action on the original DOM
 
 ```
 
@@ -922,29 +760,29 @@ The page contains synthetic information such as:
 
 
 
-\## 📊 Prototype Performance
+\## Prototype Performance
 
 
 
-Example prototype run:
+During one prototype run, we observed approximately:
 
 
 
-| Stage           | Approx. Time |
+| Stage           |    Time |
 
-| --------------- | -----------: |
+| --------------- | ------: |
 
-| Local NER       |      \~1.42 s |
+| Local NER       | \~1.42 s |
 
-| Local Redaction |        \~1 ms |
+| Local redaction |   \~1 ms |
 
-| Cloud Reasoning |      \~2.06 s |
+| Cloud reasoning | \~2.06 s |
 
-| End-to-End      |      \~3.48 s |
+| End-to-end      | \~3.48 s |
 
 
 
-These measurements are prototype observations and can vary depending on hardware, browser state, model loading, network conditions, and cloud response time.
+These numbers are prototype measurements and can vary depending on hardware, model loading, browser state, and network conditions.
 
 
 
@@ -952,83 +790,33 @@ These measurements are prototype observations and can vary depending on hardware
 
 
 
-\## ✨ Key Features
+\## What Is Working
 
 
 
-\### 🔒 Local Privacy Protection
+The current prototype demonstrates:
 
 
 
-Sensitive information is detected before webpage context is sent to the cloud.
+\* Local webpage extraction
 
+\* Local NER-based sensitive information detection
 
+\* Local sanitization
 
-\### 🧠 Local AI
+\* Sanitized context sent to cloud AI
 
+\* Structured AI responses
 
+\* Browser action execution
 
-NER inference runs locally using Transformers.js.
+\* Original DOM preservation
 
+\* Local screenshot capture
 
+\* Experimental local vision inference
 
-\### ☁️ Cloud Reasoning
-
-
-
-Sanitized context is sent to Gemini for higher-level reasoning.
-
-
-
-\### 🖱️ Browser Automation
-
-
-
-The extension can execute structured actions such as:
-
-
-
-\* Click
-
-\* Scroll
-
-\* Type
-
-\* None
-
-
-
-\### 🖥️ Local Vision Pipeline
-
-
-
-An experimental YOLOS-Tiny pipeline provides a foundation for local visual perception.
-
-
-
-\### 📊 Monitoring Dashboard
-
-
-
-The extension includes a dashboard for monitoring:
-
-
-
-\* Local AI status
-
-\* Privacy detection
-
-\* Sanitization
-
-\* Cloud reasoning
-
-\* Browser actions
-
-\* Pipeline information
-
-\* Logs
-
-\* Experimental visual perception
+\* Monitoring/dashboard interface
 
 
 
@@ -1036,153 +824,43 @@ The extension includes a dashboard for monitoring:
 
 
 
-\## 🌟 Innovation
+\## Current Limitations
 
 
 
-Traditional browser-agent architecture:
+This is a hackathon prototype, not a production-ready browser agent.
 
 
 
-```text
+\### Sensitive information detection
 
-Webpage
 
-&#x20;  ↓
 
-Cloud AI
+The current system mainly relies on NER, so it may not detect every possible type of sensitive information.
 
-&#x20;  ↓
 
-Browser Action
 
-```
+\### Vision
 
 
 
-Potential problem:
+The YOLOS-Tiny vision component is experimental and is not currently responsible for browser action decisions.
 
 
 
-```text
+\### Cloud reasoning
 
-Sensitive webpage information
 
-&#x20;         ↓
 
-&#x20;      Cloud AI
+The reasoning stage currently depends on a cloud AI service.
 
-```
 
 
+\### Browser actions
 
-Our architecture:
 
 
-
-```text
-
-Webpage
-
-&#x20;  ↓
-
-LOCAL PRIVACY FILTER
-
-&#x20;  ↓
-
-Sanitized Context
-
-&#x20;  ↓
-
-Cloud AI
-
-&#x20;  ↓
-
-Browser Action
-
-```
-
-
-
-The core innovation is the \*\*privacy boundary between perception and reasoning\*\*.
-
-
-
-> \*\*We don't prevent the browser agent from using AI. We prevent the cloud AI from seeing what it doesn't need to see.\*\*
-
-
-
-\---
-
-
-
-\## 🎯 Use Cases
-
-
-
-The architecture can be extended to privacy-sensitive browser automation scenarios such as:
-
-
-
-\* Personal productivity assistants
-
-\* Enterprise browser agents
-
-\* Customer-support workflows
-
-\* Financial dashboards
-
-\* Healthcare portals
-
-\* Internal company applications
-
-\* Form assistance
-
-\* Privacy-aware AI browsing
-
-
-
-\---
-
-
-
-\## ⚠️ Current Limitations
-
-
-
-This is a working prototype and has several limitations.
-
-
-
-\### 1. NER-based detection
-
-
-
-The current privacy layer primarily relies on NER and therefore may not detect every possible type of sensitive information.
-
-
-
-\### 2. Experimental visual perception
-
-
-
-The YOLOS-Tiny vision pipeline is currently experimental and is not the primary mechanism for browser action decisions.
-
-
-
-\### 3. Cloud dependency
-
-
-
-The reasoning stage currently uses a cloud AI model.
-
-
-
-\### 4. Prototype action set
-
-
-
-The current action space is limited to:
+The current prototype supports a limited set of actions:
 
 
 
@@ -1200,11 +878,11 @@ TYPE
 
 
 
-\### 5. Controlled demo environment
+\### Demo environment
 
 
 
-The included webpage is designed for demonstration and testing rather than production browser automation.
+The included webpage is a controlled test page created specifically for demonstrating the system.
 
 
 
@@ -1212,37 +890,33 @@ The included webpage is designed for demonstration and testing rather than produ
 
 
 
-\## 🔮 Future Scope
+\## Future Improvements
 
 
 
-Potential improvements include:
+Some areas we would like to explore next:
 
 
 
-\* More advanced local PII detection
+\* Better local PII detection
 
 \* OCR-based privacy detection
 
-\* Improved visual webpage understanding
-
 \* DOM + vision fusion
 
-\* Local multimodal models
-
-\* Better confidence-based privacy filtering
+\* More reliable webpage visual understanding
 
 \* More browser actions
 
-\* Offline cloud-reasoning alternatives
+\* Local multimodal models
 
-\* Stronger privacy guarantees
+\* Better confidence handling
 
-\* Enterprise deployment
+\* Offline reasoning
 
-\* Hardware-aware model selection
+\* Improved latency and resource usage
 
-\* Improved latency and resource optimization
+\* Enterprise browser-agent deployment
 
 
 
@@ -1250,7 +924,7 @@ Potential improvements include:
 
 
 
-\## 🏆 Hackathon Context
+\## Hackathon
 
 
 
@@ -1258,11 +932,11 @@ This project was developed as a prototype for the \*\*Smart India Hackathon (SIH
 
 
 
-> \*\*On-device Visual Perception for Light-weight Browser Agents\*\*
+\*\*On-device Visual Perception for Light-weight Browser Agents\*\*
 
 
 
-The prototype focuses on demonstrating how local AI can act as a privacy layer between webpages and cloud-based browser-agent reasoning.
+The project focuses on exploring how lightweight on-device AI can provide a privacy layer for browser agents while still allowing cloud AI to perform complex reasoning.
 
 
 
@@ -1270,11 +944,35 @@ The prototype focuses on demonstrating how local AI can act as a privacy layer b
 
 
 
-\## 👥 Team
+\## Core Idea
 
 
 
-Developed as a hackathon project focused on:
+The project can be summarized in one line:
+
+
+
+> \*\*Perceive privately → Reason remotely → Act locally.\*\*
+
+
+
+Or, even simpler:
+
+
+
+> \*\*We don't stop browser agents from using AI. We stop cloud AI from seeing information it doesn't need.\*\*
+
+
+
+\---
+
+
+
+\## Team
+
+
+
+Built as a hackathon project focused on:
 
 
 
@@ -1286,11 +984,11 @@ Developed as a hackathon project focused on:
 
 
 
-\## 📜 License
+\## License
 
 
 
-This project is currently provided for educational and hackathon purposes.
+This project is currently intended for educational and hackathon purposes.
 
 
 
